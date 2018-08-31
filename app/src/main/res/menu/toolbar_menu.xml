@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.ceri.android.ucounter.ui.SettingsActivity">
+
+    <item
+        android:id="@+id/action_delete_data"
+        android:title="@string/action_delete_current_data"
+        android:icon="@drawable/icon_delete"
+
+        app:showAsAction="always"
+        />
+    <item
+        android:id="@+id/action_counter_settings"
+        android:title="@string/action_counter_settings"
+        />
+</menu>
+
+

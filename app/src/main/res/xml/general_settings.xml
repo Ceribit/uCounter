@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/preferences_display_title"
+        android:key="pref_key_display_settings">
+        <ListPreference
+            android:key="preferences_key_display_value_size"
+            android:title="@string/preferences_display_value_size">
+        </ListPreference>
+
+        <CheckBoxPreference
+            android:key="pref_key_theme"
+            android:title="@string/preferences_display_theme" />
+        <CheckBoxPreference
+            android:key="pref_key_animate"
+            android:title="@string/preferences_display_animate" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
