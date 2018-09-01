@@ -16,7 +16,8 @@ import com.ceri.android.ucounter.ui.presenters.CounterDialogPresenter;
 
 public class DeleteCounterDialog extends DialogFragment {
     private CounterDialogPresenter mCounterDialogPresenter;
-    private int mId;
+    private int currentFragmentId;
+    private int currentFragmentPos;
 
     @NonNull
     @Override
@@ -34,12 +35,14 @@ public class DeleteCounterDialog extends DialogFragment {
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
-                if(mCounterDialogPresenter.deleteCounter(mId)){
+                if(mCounterDialogPresenter.deleteCounter(currentFragmentId)){
                     Toast.makeText(getContext(), "Counter Deleted", Toast.LENGTH_SHORT).show();
+                    Log.e("DeleteCounterDialog", "No error in deleting counter");
+                    ((CounterActivity)getActivity()).removeView(currentFragmentPos);
+                    ((CounterActivity)getActivity()).notifyChange();
+                } else{
+                    Log.e("DeleteCounterDialog", "Error in deleting counter");
                 }
-                ((CounterActivity)getActivity()).notifyChange();
-
             }
         });
 
@@ -55,8 +58,9 @@ public class DeleteCounterDialog extends DialogFragment {
     }
 
         // Get id
-        public void setId(int id){
+        public void setId(int id, int pos){
             Log.e("DeleteCounterDialog57", "You notified me Mr.  " + id);
-            mId = id;
+            currentFragmentId = id;
+            currentFragmentPos = pos;
         }
 }

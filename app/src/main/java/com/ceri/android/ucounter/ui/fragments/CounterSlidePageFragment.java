@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ceri.android.ucounter.R;
+import com.ceri.android.ucounter.ui.CounterInfo;
 import com.ceri.android.ucounter.ui.CounterItemContract;
 import com.ceri.android.ucounter.ui.presenters.CounterItemPresenter;
 import com.ceri.android.ucounter.data.db.CounterContract;
@@ -43,15 +44,17 @@ public class CounterSlidePageFragment extends Fragment implements CounterItemCon
         mTitleText = rootView.findViewById(R.id.fragment_name);
         mValueText = rootView.findViewById(R.id.fragment_value);
 
+
+
+        // Add model and presenter to this view
+        mPresenter = new CounterItemPresenter();
+        mPresenter.bind(this);
+
         // Get cursor of the current queue and set the initial values of the counter being shown
         setCursor();
         setDisplay();
 
-        // Add model and presenter to this view
-        mPresenter = new CounterItemPresenter();
-
-        mPresenter.bind(this);
-
+        // Set Button clicks
         mAddButton = rootView.findViewById(R.id.counter_page_add_button);
         mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,33 +89,22 @@ public class CounterSlidePageFragment extends Fragment implements CounterItemCon
     // Gets the data from the argument 'position' passed in when creating the fragment
     public void setCursor(){
         // Get location of data in table
-        int cursorPosition = getArguments().getInt("position");
-        Uri counterUri = Uri.withAppendedPath(CounterContract.CounterEntry.CONTENT_URI,
-                String.valueOf(cursorPosition));
+        if(getArguments() !=  null) {
+            int itemId = getArguments().getInt("id", 0);
 
-        // Get database from model
-        mContentResolver = getActivity().getContentResolver();
-        mCursor = getActivity().getContentResolver().query(counterUri,
-                null,
-                null,
-                null,
-                null);
+            CounterInfo counterInfo = mPresenter.getCounterInfo(itemId);
 
-        // Go to the beginning and move 'cursorPosition' amount of locations forward
-        if(mCursor.moveToFirst()){
+            // Get values from database
+            if(counterInfo.getId() != -1) {
+                mId = counterInfo.getId();
+                mName = "Name: " + counterInfo.getName() +
+                        "\nID: " + counterInfo.getId() +
+                        "\nValue: " + counterInfo.getValue() +
+                        "\nNext ID: " + counterInfo.getNext();
+
+                mValue = counterInfo.getValue();
+            }
         }
-        mCursor.move(cursorPosition);
-
-        // Get values from database
-        mId = mCursor.getInt(mCursor.getColumnIndex(CounterContract.CounterEntry._ID));
-        mName = mCursor.getString(mCursor.getColumnIndex(CounterContract.CounterEntry.COLUMN_COUNTER_NAME))
-            + "\nID: " + mId + "\nNext: " +
-                mCursor.getInt(mCursor.getColumnIndex(CounterContract.CounterEntry.COLUMN_COUNTER_NEXT))
-        ;
-        mValue = mCursor.getInt(mCursor.getColumnIndex(CounterContract.CounterEntry.COLUMN_COUNTER_COUNT));
-
-        // Close cursor
-        mCursor.close();
     }
 
     // Sets up the initial display of the fragment

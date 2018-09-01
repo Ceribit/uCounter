@@ -248,7 +248,7 @@ public class CounterProvider extends ContentProvider {
         mCounterDbHelper = new CounterDbHelper(getContext());
         mDatabase = mCounterDbHelper.getReadableDatabase();
 
-        mDatabase.delete(CounterContract.CounterEntry.TABLE_NAME, null, null);
+        mDatabase.delete(CounterContract.CounterEntry.TABLE_NAME, selection, selectionArgs);
 
         return 0;
     }

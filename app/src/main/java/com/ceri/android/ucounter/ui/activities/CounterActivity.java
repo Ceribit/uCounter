@@ -42,7 +42,7 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
     private ViewPager mPager;
 
     /** The pager adapter, which provides the pages to the view pager widget. */
-    private PagerAdapter mPagerAdapter;
+    private CounterSlidePagerAdapter mPagerAdapter;
 
     /** Datebase Variables*/
     private CounterDbHelper mDbHelper;
@@ -121,14 +121,20 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
     private class CounterSlidePagerAdapter extends FragmentStatePagerAdapter {
 
         ArrayList<Integer> positionList;
+        private int currentPage;
 
         CounterSlidePagerAdapter(FragmentManager fm) {
             super(fm);
-            positionList = CounterItemPresenter.getPositionList(this);
+            positionList = CounterItemPresenter.getPositionList(getBaseContext());
+            Log.e("Position List", positionList.toString());
         }
 
         @Override
         public Fragment getItem(int position) {
+            if (position > positionList.size() - 1){
+                CounterSlidePageFragment pageFragment = new CounterSlidePageFragment();
+                return pageFragment;
+            }
             Bundle bundle = new Bundle();
             bundle.putInt("id", positionList.get(position));
             CounterSlidePageFragment pageFragment = new CounterSlidePageFragment();
@@ -138,9 +144,17 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
         @Override
         public int getCount() {
+            positionList = CounterItemPresenter.getPositionList(getBaseContext());
             return getRowCount();
         }
+
+        public int getIdAtPosition(int position){
+            return positionList.get(position);
+        }
+
+
     }
+
 
     @Override
     public void onBackPressed() {
@@ -207,10 +221,9 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
                 // TODO: Add delete functionality to the menu
                 DeleteCounterDialog deleteFragment = new DeleteCounterDialog();
                 int pos = mPager.getCurrentItem();
-                Log.e("CounterActivity", "Position you gave to your sons was " + pos);
-                deleteFragment.setId(pos);
+                Log.e("CounterActivity", "Position you gave to your sons was " + mPagerAdapter.getIdAtPosition(pos));
+                deleteFragment.setId(mPagerAdapter.getIdAtPosition(pos), pos);
                 deleteFragment.show(mFragmentManager, "Delete a counter");
-
                 Toast.makeText(this, "Delete button clicked.", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.action_counter_settings:
@@ -236,5 +249,9 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
     public void notifyChange(){
         mPagerAdapter.notifyDataSetChanged();
+    }
+
+    public void removeView(int pos){
+       mPager.removeViewAt(pos);
     }
 }

@@ -3,15 +3,17 @@ package com.ceri.android.ucounter.ui.presenters;
 import android.support.annotation.Nullable;
 
 import com.ceri.android.ucounter.data.CounterDataController;
+import com.ceri.android.ucounter.ui.CounterInfo;
 import com.ceri.android.ucounter.ui.CounterItemContract;
 
 import java.util.ArrayList;
 
 public class CounterItemPresenter<V> implements CounterItemContract.Presenter {
 
-    /** Tag value representing the name of the class */
+    // Tag used for debugging
     private static String TAG = CounterItemPresenter.class.getSimpleName();
 
+    // DataController
     private CounterDataController mDataController;
 
     CounterItemContract.View mView;
@@ -39,6 +41,10 @@ public class CounterItemPresenter<V> implements CounterItemContract.Presenter {
 
     public void unbind(){
         mView = null;
+    }
+
+    public CounterInfo getCounterInfo(int id){
+        return mDataController.getCounterData(id);
     }
 
 }
