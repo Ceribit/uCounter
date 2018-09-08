@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -48,6 +47,7 @@ public class CounterDataController {
 
     // Changes the recorded id of the tail
     private void setTailIdPreference(int id){
+        mPreferences = mContext.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE);
         SharedPreferences.Editor preferencesEditor = mPreferences.edit();
         preferencesEditor.putInt("tailId", id);
         preferencesEditor.apply();
@@ -76,6 +76,7 @@ public class CounterDataController {
      * @return Returns a boolean variable which states whether the insert was successful or not
      */
     public boolean appendCounter(String name, int initialValue){
+        // Update mPreferences
         mPreferences = mContext.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE);
 
         // Creates new counter entry
@@ -86,15 +87,15 @@ public class CounterDataController {
 
         // Gets last recorded tailId
         int tailId = mPreferences.getInt("tailId", -1);
-
+        Log.e(TAG, "AppendCounter tail is " + tailId );
         int rowCount =
                 (mContentResolver.call(CounterEntry.CONTENT_URI,"getRowCount",
                         null, null).getInt("numRows"));
         if (rowCount == 0) { // If table is empty, add a head
-            Log.e("Controller", "No head found.");
+            Log.e(TAG, "AppendCounter: No head found.");
             insertHead();
         } else{
-            Log.e("Controller", "Rows: " + rowCount);
+            Log.e(TAG, "AppendCounter: Row count = " + rowCount);
         }
 
         if ( tailId == -1) { // Not yet initialized
@@ -112,6 +113,7 @@ public class CounterDataController {
     // If the database is empty, this creates a new head
     private void insertHead(){
         ContentValues contentValues = new ContentValues();
+        contentValues.put(CounterEntry._ID, 1);
         contentValues.put(CounterEntry.COLUMN_COUNTER_NAME, "DEFAULT");
         contentValues.put(CounterEntry.COLUMN_COUNTER_COUNT, "1");
         contentValues.put(CounterEntry.COLUMN_COUNTER_NEXT, "-1");
@@ -123,6 +125,7 @@ public class CounterDataController {
 
     // If the head is the only value, this updates it to point towards a new counter
     private void appendToHead(ContentValues contentValue){
+        Log.e(TAG, "AppendToHead Called.");
         // Create a new value in the table using the given contentValue
         Uri newCounterUri = mContentResolver.insert(CounterContract.CounterEntry.CONTENT_URI, contentValue);
         long newCounterId = ContentUris.parseId(newCounterUri);
@@ -142,7 +145,6 @@ public class CounterDataController {
                 selection,
                 selectionArgs
         );
-        Log.e("AppendToHead", "Yes it was called");
         // Edit SharedPreferences to have it's tail point toward the new counter
         SharedPreferences.Editor preferencesEditor = mPreferences.edit();
         preferencesEditor.putInt("tailId", (int) newCounterId);
@@ -251,12 +253,14 @@ public class CounterDataController {
         int rowsUpdated;
 
         ContentValues contentValue = new ContentValues();
-
-        // Updates the name
+        // Updates value if it exists
         if(oldValue != null) {
             contentValue.put(CounterContract.CounterEntry.COLUMN_COUNTER_COUNT, oldValue + step);
         }
+
+        // Updates name if it exists
         if(name != null){
+            Log.e(TAG, "Name was not equal to null and added: " + name);
             contentValue.put(CounterEntry.COLUMN_COUNTER_NAME, name);
         }
 
@@ -317,8 +321,8 @@ public class CounterDataController {
         String selectionArgs[] = {String.valueOf(id)};
 
         // Changes the id of the counter pointing to this one
-        boolean isSuccessful = replaceTail(id);
-        Log.e(TAG, "Replace tail called");
+        boolean isSuccessful = replacePrevId(id);
+        Log.e(TAG, "Attempting to delete" + deleteSelection + " with id=" + String.valueOf(id) );
         // Delete the requested value
         long rowsDeleted = mContentResolver.delete(
                 CounterEntry.CONTENT_URI,
@@ -327,49 +331,81 @@ public class CounterDataController {
         );
 
         // Checks if the data was deleted
-        if (rowsDeleted != 1){
+        if (rowsDeleted != 0){
             isSuccessful = false;
+
         }
-        return isSuccessful;
+        Log.e(TAG, "DeleteCounter : Rows deleted = " + rowsDeleted);
+        return rowsDeleted>0;
     }
 
 
 
-    // Given a counter's id, this replaces the pointer of the counter that points to it
-    private boolean replaceTail(int id){
-        // Get content resolver
+    // Given a counter's id, this replaces the pointer of the counter that points to it with the
+    // given counter's id
+    private boolean replacePrevId(int id){
+        Log.e(TAG, "replacePrevId: Id=" + id);
+        // Get Content Resolver
         mContentResolver = mContext.getContentResolver();
-        String findSelection = CounterEntry._ID + "=?";
+        String idSelection = CounterEntry._ID + "=?";
         String updateSelection = CounterEntry.COLUMN_COUNTER_NEXT + "=?";
         String selectionArgs[] = {String.valueOf(id)};
 
         // Query to find what the deleted value pointed to
-        Cursor cursor = mContentResolver.query(
+        Cursor currentNode = mContentResolver.query(
                 CounterEntry.CONTENT_URI,
                 null,
-                findSelection,
+                idSelection,
                 selectionArgs,
                 null
         );
 
         // Update the head of the delete value to point towards it's original tail
-        if(cursor != null) {
-            cursor.moveToFirst();
-            int deleteTail = cursor.getInt(
-                    cursor.getColumnIndex(CounterEntry.COLUMN_COUNTER_NEXT));
-            cursor.close();
+        if(currentNode != null) {
+            // Move cursor to the beginning
+            currentNode.moveToFirst();
+
+            // Get what the current value points to
+            int currentNodeNext = currentNode.getInt(
+                    currentNode.getColumnIndex(CounterEntry.COLUMN_COUNTER_NEXT));
+            currentNode.close();
+            Log.e(TAG, "replacePrevId: currentNodeNext=" + currentNodeNext);
+
+            // Update previous node to point to CurrentNode's Next
             ContentValues contentValues = new ContentValues();
-            Log.e(TAG, "Delete tail" + deleteTail);
-            contentValues.put(CounterEntry.COLUMN_COUNTER_NEXT, deleteTail);
+            contentValues.put(CounterEntry.COLUMN_COUNTER_NEXT, currentNodeNext);
             long rowsUpdated = mContentResolver.update(
                     CounterEntry.CONTENT_URI,
                     contentValues,
                     updateSelection,
                     new String[]{String.valueOf(id)}
             );
-            Log.e(TAG, "Rows Updated: " + rowsUpdated );
+
+            // If delete node is at the end, update SharedPreference's tailId
+            if(currentNodeNext == -1){
+                // Find past node
+                Cursor prevNode = mContentResolver.query(
+                        CounterEntry.CONTENT_URI,
+                        null,
+                        updateSelection,
+                        new String[]{String.valueOf(-1)},
+                        null
+                );
+                if(prevNode != null) {prevNode.moveToFirst();}
+                Log.e(TAG, "Replace Tail Function: Tail replaced with " +
+                                prevNode.getColumnIndex(CounterEntry._ID));
+                setTailIdPreference(prevNode.getInt(prevNode.getColumnIndex(CounterEntry._ID)));
+            }
+            // If a row was updated
+            if(rowsUpdated != 0){
+                Log.e(TAG, "Replace Tail Function: " + rowsUpdated + " rows updated");
+                return true;
+            } else{
+                Log.i(TAG, "Replace Tail Function: 0 rows updated");
+            }
             return true;
         } else{
+            Log.i(TAG, "Replace Tail Function : Cursor was null");
             return false;
         }
     }

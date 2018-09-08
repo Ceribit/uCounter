@@ -8,7 +8,7 @@ import com.ceri.android.ucounter.ui.CounterItemContract;
 
 import java.util.ArrayList;
 
-public class CounterItemPresenter<V> implements CounterItemContract.Presenter {
+public class CounterItemPresenter implements CounterItemContract.Presenter {
 
     // Tag used for debugging
     private static String TAG = CounterItemPresenter.class.getSimpleName();
@@ -22,11 +22,17 @@ public class CounterItemPresenter<V> implements CounterItemContract.Presenter {
         mDataController = new CounterDataController();
     }
 
-    public void attach(V view) {
-    }
 
     public Boolean updateCounter(int id, String name, int oldValue, int change){
         return mDataController.updateCounter(id, name, oldValue, change);
+    }
+
+    public Boolean updateCounter(CounterInfo counterInfo){
+        return mDataController.updateCounter(
+                counterInfo.getId(),
+                counterInfo.getName(),
+                counterInfo.getValue(),
+                0);
     }
 
     @Nullable

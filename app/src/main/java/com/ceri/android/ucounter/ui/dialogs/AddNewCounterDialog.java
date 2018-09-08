@@ -19,6 +19,8 @@ public class AddNewCounterDialog extends DialogFragment {
 
     private CounterDialogPresenter mCounterDialogPresenter;
 
+    // Specifies whether to jump to the end of the ViewPager
+    private static int MOVE_TO_END = -1;
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -41,7 +43,7 @@ public class AddNewCounterDialog extends DialogFragment {
                 if(mCounterDialogPresenter.insertCounter(counterName, 0)){ // Inform user of new insert
                     Toast.makeText(getContext(), "New counter added", Toast.LENGTH_SHORT).show();
                 }
-                ((CounterActivity)getActivity()).notifyChange();
+                ((CounterActivity)getActivity()).notifyChange(MOVE_TO_END);
             }
         });
 

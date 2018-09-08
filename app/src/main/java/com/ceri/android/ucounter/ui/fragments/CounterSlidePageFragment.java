@@ -120,7 +120,7 @@ public class CounterSlidePageFragment extends Fragment implements CounterItemCon
 
     // Updates the value of the displayed number
     public void setButtonClick(int step){
-        boolean hasChanged = mPresenter.updateCounter(mId, mName , mValue, step);
+        boolean hasChanged = mPresenter.updateCounter(mId, null , mValue, step);
         if (hasChanged){
             updateValue(mValue+step);
             mValue += step;

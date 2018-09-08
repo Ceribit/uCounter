@@ -1,5 +1,7 @@
 package com.ceri.android.ucounter.ui.presenters;
 
+import android.util.Log;
+
 import com.ceri.android.ucounter.data.CounterDataController;
 import com.ceri.android.ucounter.ui.CounterItemContract;
 
@@ -18,6 +20,7 @@ public class CounterDialogPresenter implements CounterItemContract.Presenter {
     }
 
     public Boolean insertCounter(String name, int initialValue){
+        Log.e(TAG, "Name: " + name);
         return mDataController.appendCounter(name, initialValue);
     }
 

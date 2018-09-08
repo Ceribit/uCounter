@@ -233,8 +233,7 @@ public class CounterProvider extends ContentProvider {
      */
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        deleteCounter(uri, selection, selectionArgs);
-        return 0;
+        return deleteCounter(uri, selection, selectionArgs);
         }
 
     /**
@@ -247,10 +246,8 @@ public class CounterProvider extends ContentProvider {
     public int deleteCounter(Uri uri, String selection, String[] selectionArgs) {
         mCounterDbHelper = new CounterDbHelper(getContext());
         mDatabase = mCounterDbHelper.getReadableDatabase();
+        return mDatabase.delete(CounterContract.CounterEntry.TABLE_NAME, selection, selectionArgs);
 
-        mDatabase.delete(CounterContract.CounterEntry.TABLE_NAME, selection, selectionArgs);
-
-        return 0;
     }
 
 

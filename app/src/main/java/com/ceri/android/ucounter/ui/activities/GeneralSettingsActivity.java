@@ -11,6 +11,6 @@ public class GeneralSettingsActivity extends PreferenceActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.general_settings);
+        addPreferencesFromResource(R.xml.general_preferences);
     }
 }

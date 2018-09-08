@@ -1,13 +1,17 @@
 package com.ceri.android.ucounter.ui.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -18,11 +22,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.ceri.android.ucounter.R;
-import com.ceri.android.ucounter.data.CounterDataController;
 import com.ceri.android.ucounter.data.db.CounterContract;
 import com.ceri.android.ucounter.data.db.CounterDbHelper;
 import com.ceri.android.ucounter.ui.CounterItemContract;
@@ -50,6 +52,7 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
     /** Manages multiple fragments used throughout the program */
     private FragmentManager mFragmentManager;
 
+    private static String TAG = CounterActivity.class.getSimpleName();
     /**
      * Overridden onCreate Function
      * @param savedInstanceState Takes the current state of the instance
@@ -88,11 +91,16 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
         //Set Up Toolbar and associated images
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorText));
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        // Set up bar
+        Drawable drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_menu, null);
+        drawable = DrawableCompat.wrap(drawable);
+        DrawableCompat.setTint(drawable, getResources().getColor(R.color.colorText));
+        actionBar.setHomeAsUpIndicator(drawable);
 
         /* TODO: Set addDrawerListener */
 
@@ -109,7 +117,12 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
      **************************/
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu , menu);
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        Drawable drawable = getResources().getDrawable(R.drawable.icon_delete);
+        drawable.setColorFilter(getResources().getColor(R.color.colorText), PorterDuff.Mode.SRC_IN);
+        MenuItem menuItem = menu.findItem(R.id.action_delete_data);
+        menuItem.setIcon(drawable);
+
         return true;
     }
 
@@ -143,6 +156,13 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         }
 
         @Override
+        public int getItemPosition(@NonNull Object item) {
+            CounterSlidePageFragment fragment = (CounterSlidePageFragment) item;
+            positionList = CounterItemPresenter.getPositionList(getBaseContext());
+            return POSITION_NONE;
+        }
+
+        @Override
         public int getCount() {
             positionList = CounterItemPresenter.getPositionList(getBaseContext());
             return getRowCount();
@@ -151,8 +171,6 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         public int getIdAtPosition(int position){
             return positionList.get(position);
         }
-
-
     }
 
 
@@ -174,10 +192,12 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
      * @return
      */
     public Boolean setDrawerListener(MenuItem item){
-        // Set item as selected to have a highlight
+        // Highlights selected item
         item.setChecked(true);
+
         // Close drawer when item is selected
         mDrawerLayout.closeDrawers();
+
         // TODO: Update UI based on item selected
         int menuId = item.getItemId();
         String toastMessage = "Nothing clicked";
@@ -190,7 +210,7 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
                 break;
             case R.id.add_group:
                 // TODO: Add new counter group
-                toastMessage = "Add group clicked!";
+                toastMessage = "Add group clicked! (But nothing happened!) ";
                 break;
             case R.id.drawer_settings:
                 Intent intent = new Intent(this, GeneralSettingsActivity.class);
@@ -199,12 +219,21 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
                 break;
             case R.id.drawer_delete_all:
                 getContentResolver().delete(CounterContract.CounterEntry.CONTENT_URI, null, null);
+                SharedPreferences.Editor preferencesEditor = getSharedPreferences("com.ceri.android.counterprefs", MODE_PRIVATE).edit();
+                preferencesEditor.putInt("tailId", -1);
+                preferencesEditor.apply();
         }
         Toast.makeText(getBaseContext(), toastMessage,
                 Toast.LENGTH_SHORT).show();
         return true;
     }
 
+
+    @Override
+    protected void onPostResume() {
+        notifyChange(null);
+        super.onPostResume();
+    }
 
     /**
      * Performs certain actions based on
@@ -214,44 +243,76 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
+
+            // Returns the user back to the menu
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
+
+            // Opens up Delete Notification to delete the current page item
             case R.id.action_delete_data:
-                // TODO: Add delete functionality to the menu
+                int pagePosition = mPager.getCurrentItem();
+                Log.e(TAG, "onOptionsItemSelected : Delete_Data ID Provided = "
+                        + mPagerAdapter.getIdAtPosition(mPager.getCurrentItem()));
+
                 DeleteCounterDialog deleteFragment = new DeleteCounterDialog();
-                int pos = mPager.getCurrentItem();
-                Log.e("CounterActivity", "Position you gave to your sons was " + mPagerAdapter.getIdAtPosition(pos));
-                deleteFragment.setId(mPagerAdapter.getIdAtPosition(pos), pos);
+
+                // Sets ID and provides the current page number to the delete dialog
+                deleteFragment.setId(
+                        mPagerAdapter.getIdAtPosition(pagePosition),
+                        pagePosition, mPagerAdapter.
+                                getCount()
+                );
+
+                // Show fragment to the screen
                 deleteFragment.show(mFragmentManager, "Delete a counter");
                 Toast.makeText(this, "Delete button clicked.", Toast.LENGTH_SHORT).show();
                 break;
+
+            // Opens up the settings page for the current page item
             case R.id.action_counter_settings:
-                Intent intent = new Intent(this,CounterSettingsActivity.class);
+                // Create intent to open up the settings screen
+                Intent intent = new Intent(this, CounterEditorActivity.class);
+
+                // Store current page information
+                intent.putExtra(
+                        "counterId",
+                        mPagerAdapter.getIdAtPosition(mPager.getCurrentItem())
+                );
+
+                // /Start Activity
                 startActivity(intent);
+                overridePendingTransition(
+                        R.anim.animation_right_to_center,
+                        R.anim.animation_center_to_left);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
 
 
-    /**************************
-     * Database Utility
-     **************************/
+    // *************************
+    // * Database Utility
+    // *************************
+    // TODO: Get the number of rows through the provider instead
+    /** Gets the number of rows directly from the database */
     public int getRowCount() {
         Bundle bundle = getContentResolver().call(CounterContract.CounterEntry.CONTENT_URI, "getRowCount",
                 null, null);
         return bundle.getInt("numRows");
     }
 
-    public Boolean isEmpty(){
-        return getRowCount() == 0;
-    }
-
-    public void notifyChange(){
+    /** Notifies the system that the adapter has changed */
+    public void notifyChange(Integer newPosition){
         mPagerAdapter.notifyDataSetChanged();
-    }
 
-    public void removeView(int pos){
-       mPager.removeViewAt(pos);
+        // If not specified, don't move
+        if(newPosition != null) {
+            if (newPosition != -1) {
+                mPager.setCurrentItem(newPosition);
+            } else {
+                mPager.setCurrentItem(mPagerAdapter.getCount() - 1);
+            }
+        }
     }
 }

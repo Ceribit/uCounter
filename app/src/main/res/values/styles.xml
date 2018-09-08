@@ -1,11 +1,56 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Base.Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Primary Colors -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!--Action Bar Colors-->
+        <item name="android:actionMenuTextColor">@color/colorText</item>
+        <item name="colorControlNormal">@color/colorText</item>
+        <item name="colorControlActivated">@color/colorText</item>
+        <item name="colorControlHighlight">@color/colorText</item>
+        <item name="colorButtonNormal">@color/colorText</item>
+        <item name="colorSwitchThumbNormal">@color/colorText</item>
+        <item name="textColorAlertDialogListItem">@color/colorText</item>
+
+
+        <!-- Action Bar Settings-->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
+    <style name="PreferenceTheme" parent="ThemeOverlay.AppCompat.ActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="android:color">@color/colorPrimary</item>
     </style>
 
+    <style name="EditorTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Primary Colors and Accents -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="android:color">@color/colorPrimary</item>
+
+        <!--Action Bar Colors-->
+        <item name="android:actionBarStyle">@style/CustomActionBar</item>
+        <item name="android:textColorPrimary">#000</item>
+    </style>
+
+    <style name="CustomActionBar">
+        <item name="android:actionMenuTextColor">@color/colorText</item>
+        <item name="colorControlNormal">@color/colorText</item>
+        <item name="colorControlActivated">@color/colorText</item>
+        <item name="colorControlHighlight">@color/colorText</item>
+        <item name="colorButtonNormal">@color/colorText</item>
+        <item name="colorSwitchThumbNormal">@color/colorText</item>
+        <item name="textColorAlertDialogListItem">@color/colorText</item>
+    </style>
 </resources>

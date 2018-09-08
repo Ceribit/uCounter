@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="Title"
+    android:title="Counter Settings"
     >
+
     <!--General Settings-->
     <PreferenceCategory
         android:title="@string/counter_settings_general"
@@ -15,7 +17,6 @@
             android:key="gen_key_value_settings"
             android:summary="0" />
     </PreferenceCategory>
-    <PreferenceCategory android:layout="@layout/divider"/>
     <!-- Display Settings -->
     <PreferenceCategory
         android:title="@string/counter_settings_display">
@@ -24,7 +25,6 @@
             android:key="gen_key_color_settings"
             android:summary="blue"/>
     </PreferenceCategory>
-    <PreferenceCategory android:layout="@layout/divider"/>
     <PreferenceCategory
         android:title="@string/counter_Settings_other"
         android:key="gen_key_other_settings">
