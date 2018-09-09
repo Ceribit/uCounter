@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -54,13 +55,13 @@ public class CounterDataController {
     }
 
 
-    /****************************
-     *
-     *
-     * Insert
-     *
-     *
-     ****************************/
+//    /****************************
+//     *
+//     *
+//     * Insert
+//     *
+//     *
+//     ****************************/
 
 
     // TODO: Create a Linked List that will keep the data sorted
@@ -87,30 +88,36 @@ public class CounterDataController {
 
         // Gets last recorded tailId
         int tailId = mPreferences.getInt("tailId", -1);
-        Log.e(TAG, "AppendCounter tail is " + tailId );
+        Log.i(TAG, "AppendCounter : LastRecordedTailId =  " + tailId );
+
+        // Gets size of table
         int rowCount =
                 (mContentResolver.call(CounterEntry.CONTENT_URI,"getRowCount",
                         null, null).getInt("numRows"));
+
+        // Initializes table if not yet created
         if (rowCount == 0) { // If table is empty, add a head
-            Log.e(TAG, "AppendCounter: No head found.");
             insertHead();
         } else{
-            Log.e(TAG, "AppendCounter: Row count = " + rowCount);
+            Log.i(TAG, "AppendCounter: Table already initialized." );
         }
 
+
+        // Applies LinkedList insertion based on the if there was a recorded tail
         if ( tailId == -1) { // Not yet initialized
             // TODO: Check if SharedPreferences was deleted
             Log.e(this.getClass().getSimpleName(), "Tail Id was -1");
             appendToHead(contentValues);
         } else{ // Only one value
-            Log.e(this.getClass().getSimpleName(), "Tail Id was not -1");
             append(contentValues, tailId);
         }
+
+        // Returns successful insertion
         return true;
     }
 
 
-    // If the database is empty, this creates a new head
+    /** If the database is empty, this creates a new head */
     private void insertHead(){
         ContentValues contentValues = new ContentValues();
         contentValues.put(CounterEntry._ID, 1);
@@ -118,14 +125,13 @@ public class CounterDataController {
         contentValues.put(CounterEntry.COLUMN_COUNTER_COUNT, "1");
         contentValues.put(CounterEntry.COLUMN_COUNTER_NEXT, "-1");
         mContentResolver.insert(CounterEntry.CONTENT_URI, contentValues);
-        Log.e("InsertHead", "Head inserted");
     }
 
 
-
-    // If the head is the only value, this updates it to point towards a new counter
+    /** If the head is the only value, this updates it to point towards a new counter */
     private void appendToHead(ContentValues contentValue){
-        Log.e(TAG, "AppendToHead Called.");
+        Log.i(TAG, "AppendToHead : Value attached to head");
+
         // Create a new value in the table using the given contentValue
         Uri newCounterUri = mContentResolver.insert(CounterContract.CounterEntry.CONTENT_URI, contentValue);
         long newCounterId = ContentUris.parseId(newCounterUri);
@@ -145,7 +151,7 @@ public class CounterDataController {
                 selection,
                 selectionArgs
         );
-        // Edit SharedPreferences to have it's tail point toward the new counter
+        // Edit SharedPreferences to have the recorded tail as the new counter
         SharedPreferences.Editor preferencesEditor = mPreferences.edit();
         preferencesEditor.putInt("tailId", (int) newCounterId);
         preferencesEditor.apply();
@@ -153,7 +159,7 @@ public class CounterDataController {
 
 
 
-    // Updates the tail of the database to point towards the newest element
+    /** Updates the database linkedlist to have its last value as the new element */
     private void append(ContentValues contentValue, int lastId){
         // Create a new value in the table using the given contentValue
         Uri newCounterUri = mContentResolver.insert(CounterEntry.CONTENT_URI, contentValue);
@@ -182,20 +188,20 @@ public class CounterDataController {
 
 
 
-    /*** ************************
-     *
-     *
-     * Data Retrieval
-     *
-     *
-     ****************************/
+    //***************************
+    //*
+    //*
+    //* Data Retrieval
+    //*
+    //*
+    //***************************
 
     /**
      * Returns an array list of each id, where the integer's index is an ID and its placement is its
      * position in the PageAdapter
      * */
     public static ArrayList<Integer> getPositionList(Object view){
-        ContentResolver content = ((Context) view).getContentResolver();
+        ContentResolver content = ((Context)view).getContentResolver();
 
         // Initialize query variables
         String[] projection = {
@@ -208,7 +214,6 @@ public class CounterDataController {
         arrayList.add(1);
 
         int currentNode = 1;
-        int newTail = -1;
 
         // Keep moving through the linked list until you reach the end
         while(currentNode != -1){
@@ -240,45 +245,8 @@ public class CounterDataController {
     }
 
 
-    /**
-     *  Updates a given id with a new value and/or name
-     * @param id New id of the counter
-     * @param name New name of the counter
-     * @param oldValue New
-     * @param step The
-     * @return Returns whether the counter was successfully updated
-     */
-    public boolean updateCounter(int id, @Nullable String name, @Nullable Integer oldValue, @Nullable int step){
-        // Track the number of rows updated (should be either zero or one)
-        int rowsUpdated;
 
-        ContentValues contentValue = new ContentValues();
-        // Updates value if it exists
-        if(oldValue != null) {
-            contentValue.put(CounterContract.CounterEntry.COLUMN_COUNTER_COUNT, oldValue + step);
-        }
-
-        // Updates name if it exists
-        if(name != null){
-            Log.e(TAG, "Name was not equal to null and added: " + name);
-            contentValue.put(CounterEntry.COLUMN_COUNTER_NAME, name);
-        }
-
-        // Updates the value
-        String selection = CounterContract.CounterEntry._ID + " =?";
-        String[] selectionArgs = {String.valueOf(id)};
-        rowsUpdated = mContentResolver.update(
-                CounterContract.CounterEntry.CONTENT_URI,
-                contentValue,
-                selection,
-                selectionArgs
-        );
-        return (rowsUpdated > 0);
-    }
-
-
-
-    // Returns a CounterInfo object (id, name, value, next) given an id
+    /** Returns a CounterInfo object (id, name, value, next) given an id */
     public CounterInfo getCounterData(int id){
         CounterInfo counterInfo = new CounterInfo();
 
@@ -305,16 +273,65 @@ public class CounterDataController {
         return counterInfo;
     }
 
-    /****************************
-     *
-     *
-     * Delete
-     *
-     *
-     ****************************/
 
-    // Replaces the previous counter's "NEXT" and replaces it with the current counter's "NEXT"
-    // This then deletes the current counter from the database
+    //***************************
+    //*
+    //*
+    //* Update
+    //*
+    //*
+    //***************************
+
+    /**
+     *  Updates a given id with a new value and/or name
+     * @param id New id of the counter
+     * @param name New name of the counter
+     * @param oldValue New
+     * @param step The
+     * @return Returns whether the counter was successfully updated
+     */
+    public boolean updateCounter(int id, @Nullable String name, @Nullable Integer oldValue, @Nullable int step){
+        // Track the number of rows updated (should be either zero or one)
+        int rowsUpdated;
+
+        ContentValues contentValue = new ContentValues();
+
+        // Updates value if it exists
+        if(oldValue != null) {
+            contentValue.put(CounterContract.CounterEntry.COLUMN_COUNTER_COUNT, oldValue + step);
+        }
+
+        // Updates name if it exists
+        if(name != null){
+            Log.e(TAG, "Name was not equal to null and added: " + name);
+            contentValue.put(CounterEntry.COLUMN_COUNTER_NAME, name);
+        }
+
+        // Updates the value
+        String selection = CounterContract.CounterEntry._ID + " =?";
+        String[] selectionArgs = {String.valueOf(id)};
+        rowsUpdated = mContentResolver.update(
+                CounterContract.CounterEntry.CONTENT_URI,
+                contentValue,
+                selection,
+                selectionArgs
+        );
+        return (rowsUpdated > 0);
+    }
+
+        ///****************************
+        // *
+        // *
+        // * Delete
+        // *
+        // *
+        // ****************************/
+
+    /**
+     * LinkedList delete implementation:
+     *      Replaces the previous counter's "NEXT" and replaces it with the current counter's "NEXT"
+     *      This then deletes the current counter from the database
+     * */
     public boolean deleteCounter(int id){
         // Creates query arguments
         String deleteSelection = CounterEntry._ID + "=?";
@@ -340,11 +357,14 @@ public class CounterDataController {
     }
 
 
-
-    // Given a counter's id, this replaces the pointer of the counter that points to it with the
-    // given counter's id
+    /**
+     * (LinkedList remove from list implementation)
+     *  Given a counter's id, this replaces the pointer of the counter that points to it with the
+     *  given counter's id
+     *  */
     private boolean replacePrevId(int id){
         Log.e(TAG, "replacePrevId: Id=" + id);
+
         // Get Content Resolver
         mContentResolver = mContext.getContentResolver();
         String idSelection = CounterEntry._ID + "=?";
@@ -362,6 +382,7 @@ public class CounterDataController {
 
         // Update the head of the delete value to point towards it's original tail
         if(currentNode != null) {
+
             // Move cursor to the beginning
             currentNode.moveToFirst();
 
@@ -391,23 +412,26 @@ public class CounterDataController {
                         new String[]{String.valueOf(-1)},
                         null
                 );
-                if(prevNode != null) {prevNode.moveToFirst();}
+
+                // Move Counter to the beginning
+                prevNode.moveToFirst();
                 Log.e(TAG, "Replace Tail Function: Tail replaced with " +
                                 prevNode.getColumnIndex(CounterEntry._ID));
                 setTailIdPreference(prevNode.getInt(prevNode.getColumnIndex(CounterEntry._ID)));
             }
             // If a row was updated
             if(rowsUpdated != 0){
-                Log.e(TAG, "Replace Tail Function: " + rowsUpdated + " rows updated");
                 return true;
             } else{
+
+                // Unsuccessful update
                 Log.i(TAG, "Replace Tail Function: 0 rows updated");
+                return false;
             }
-            return true;
         } else{
-            Log.i(TAG, "Replace Tail Function : Cursor was null");
+
+            // Unsuccessful update
             return false;
         }
     }
-
 }

@@ -1,5 +1,7 @@
 package com.ceri.android.ucounter.ui;
 
+import android.util.Log;
+
 public class CounterInfo {
     private int mValue;
     private String mName;
@@ -29,13 +31,21 @@ public class CounterInfo {
     public int getNext(){
         return next;
     }
-    // Set
+
     public void setValue(int value){
         mValue = value;
     }
 
+    public void setValue(String sValue) {
+        try{
+            mValue = Integer.parseInt(sValue);
+        } catch (NumberFormatException e){
+            Log.e(CounterInfo.class.getSimpleName(), "NumberFormatExeception: " + e);
+        }
+    }
+
     public void setName(String name){
-        mName = name;
+        if(!name.isEmpty()) {mName = name;}
     }
 
     public void setId(int id){

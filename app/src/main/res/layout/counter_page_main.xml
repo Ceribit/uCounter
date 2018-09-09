@@ -27,6 +27,7 @@
         android:layout_height="match_parent">
     </android.support.v4.view.ViewPager>
 
+    <!-- Holds the toolbar of the page -->
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"

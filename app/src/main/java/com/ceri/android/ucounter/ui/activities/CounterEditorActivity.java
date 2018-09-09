@@ -21,6 +21,9 @@ import com.ceri.android.ucounter.ui.CounterItemContract;
 import com.ceri.android.ucounter.ui.presenters.CounterItemPresenter;
 
 
+/**
+ *  Manages the editor to change the name or value of the counter
+ * */
 public class CounterEditorActivity extends AppCompatActivity implements
         CounterItemContract.View {
 
@@ -32,6 +35,7 @@ public class CounterEditorActivity extends AppCompatActivity implements
 
     /** The value of the associated counter */
     private EditText valueEditText;
+
     /** The Id for which this editor is for */
     private int mId;
 
@@ -43,29 +47,33 @@ public class CounterEditorActivity extends AppCompatActivity implements
         setContentView(R.layout.counter_editor);
         super.onCreate(savedInstanceState);
 
+        // Get ID of the associated counter
         Intent intent = getIntent();
         mId = intent.getIntExtra("counterId", 1);
 
+        // Enable back button
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-
+        // Bind Presenter
         mPresenter = new CounterItemPresenter();
         mPresenter.bind(this);
 
+        // Get views
         nameEditText = findViewById(R.id.editor_item_name_input);
         valueEditText = findViewById(R.id.editor_item_value_input);
-        mCounterInfo = mPresenter.getCounterInfo(mId);
 
+        // Get original values and store
+        mCounterInfo = mPresenter.getCounterInfo(mId);
         nameEditText.setText(mCounterInfo.getName());
         valueEditText.setText(String.valueOf(mCounterInfo.getValue()));
     }
 
+
+    /** Updates value from the database then animates the transition back to the main screen*/
     @Override
     public void finish() {
-        mCounterInfo.setName(nameEditText.getText().toString());
-        mCounterInfo.setValue(Integer.parseInt(valueEditText.getText().toString()));
-        mPresenter.updateCounter(mCounterInfo);
+        updateDatabase();
         super.finish();
         overridePendingTransition(
                 R.anim.animation_left_to_center,
@@ -73,11 +81,13 @@ public class CounterEditorActivity extends AppCompatActivity implements
         );
     }
 
+    /** Retrieves the base context of the activity */
     @Override
     public Object getViewContext() {
         return getBaseContext();
     }
 
+    /** Specifies action bar actions */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
@@ -86,5 +96,12 @@ public class CounterEditorActivity extends AppCompatActivity implements
                 return true;
         }
         return true;
+    }
+
+    /** Retrieves data from views and inserts them into the database */
+    private void updateDatabase(){
+        mCounterInfo.setName(nameEditText.getText().toString());
+        mCounterInfo.setValue(valueEditText.getText().toString());
+        mPresenter.updateCounter(mCounterInfo);
     }
 }

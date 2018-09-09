@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ceri.android.ucounter.R;
@@ -52,7 +53,12 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
     /** Manages multiple fragments used throughout the program */
     private FragmentManager mFragmentManager;
 
+    /** Log Tag for Debugging */
     private static String TAG = CounterActivity.class.getSimpleName();
+
+    /** Empty View */
+    private TextView mEmptyView;
+
     /**
      * Overridden onCreate Function
      * @param savedInstanceState Takes the current state of the instance
@@ -84,13 +90,11 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         mPager = (ViewPager) findViewById(R.id.main_pager);
         mPagerAdapter = new CounterSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
-
-        // TODO: Set Empty View
-        View emptyView = findViewById(R.id.counter_empty_view);
-        emptyView.setVisibility(View.GONE);
+        mPager.setOffscreenPageLimit(3);
+        // Set Empty View
 
         //Set Up Toolbar and associated images
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorText));
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -102,19 +106,21 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         DrawableCompat.setTint(drawable, getResources().getColor(R.color.colorText));
         actionBar.setHomeAsUpIndicator(drawable);
 
-        /* TODO: Set addDrawerListener */
+        /** TODO: Set addDrawerListener */
 
 
     }
 
+    /** Returns activity context for the model */
     @Override
     public Object getViewContext() {
         return this;
     }
 
-    /**************************
-     * Menu Options
-     **************************/
+    /**
+     * @param menu is the associated menu item selected
+     * @return Action based on selected menu option and whether it was successful
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
@@ -133,15 +139,20 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
      **************************/
     private class CounterSlidePagerAdapter extends FragmentStatePagerAdapter {
 
+        /**
+         * A list of ids for each counter where the array index represents the counter's associated
+         * page
+          */
         ArrayList<Integer> positionList;
-        private int currentPage;
 
+        /** Instantiates the position list */
         CounterSlidePagerAdapter(FragmentManager fm) {
             super(fm);
             positionList = CounterItemPresenter.getPositionList(getBaseContext());
-            Log.e("Position List", positionList.toString());
+            Log.i(TAG, "Position list Array = " + positionList.toString());
         }
 
+        /** Returns the counter fragment of a given position */
         @Override
         public Fragment getItem(int position) {
             if (position > positionList.size() - 1){
@@ -149,27 +160,38 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
                 return pageFragment;
             }
             Bundle bundle = new Bundle();
-            bundle.putInt("id", positionList.get(position));
+            bundle.putInt("id", positionList.get(position+1));
             CounterSlidePageFragment pageFragment = new CounterSlidePageFragment();
             pageFragment.setArguments(bundle);
             return pageFragment;
         }
 
+        /** Refreshes Position List and makes fragments refresh*/
         @Override
         public int getItemPosition(@NonNull Object item) {
-            CounterSlidePageFragment fragment = (CounterSlidePageFragment) item;
             positionList = CounterItemPresenter.getPositionList(getBaseContext());
             return POSITION_NONE;
         }
 
+        /** Returns the number of rows */
         @Override
         public int getCount() {
+            mEmptyView = findViewById(R.id.counter_empty_view);
+
             positionList = CounterItemPresenter.getPositionList(getBaseContext());
-            return getRowCount();
+            int positionSize = positionList.size();
+            if(positionSize < 2){
+                mEmptyView.setVisibility(View.VISIBLE);
+            } else{
+                mEmptyView.setVisibility(View.INVISIBLE);
+            }
+            return positionSize -1 ; // -1 is done to exclude the default value in the front of the
+                                     // list
         }
 
-        public int getIdAtPosition(int position){
-            return positionList.get(position);
+        /** Returns the id at the associated position */
+        private int getIdAtPosition(int position){
+            return positionList.get(position+1);
         }
     }
 
@@ -183,9 +205,10 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         }
     }
 
-    /**************************
-    * onClick Utility
-     **************************/
+
+    ///**************************
+    //* OnClick Utility for Drawers/Menus
+    //**************************/
     /**
      * Performs certain drawer actions based on
      * @param item [Takes in item selected by the user]
@@ -226,13 +249,6 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         Toast.makeText(getBaseContext(), toastMessage,
                 Toast.LENGTH_SHORT).show();
         return true;
-    }
-
-
-    @Override
-    protected void onPostResume() {
-        notifyChange(null);
-        super.onPostResume();
     }
 
     /**
@@ -292,17 +308,9 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
 
     // *************************
-    // * Database Utility
+    // * Notification Utility
     // *************************
-    // TODO: Get the number of rows through the provider instead
-    /** Gets the number of rows directly from the database */
-    public int getRowCount() {
-        Bundle bundle = getContentResolver().call(CounterContract.CounterEntry.CONTENT_URI, "getRowCount",
-                null, null);
-        return bundle.getInt("numRows");
-    }
-
-    /** Notifies the system that the adapter has changed */
+    /** Notifies the system that the adapter has changed and changes position of pager */
     public void notifyChange(Integer newPosition){
         mPagerAdapter.notifyDataSetChanged();
 
@@ -315,4 +323,12 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
             }
         }
     }
+
+    /** Every time the program resumes, update the fragments */
+    @Override
+    protected void onPostResume() {
+        notifyChange(null);
+        super.onPostResume();
+    }
+
 }
