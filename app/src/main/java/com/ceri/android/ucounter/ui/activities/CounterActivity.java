@@ -17,24 +17,31 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ceri.android.ucounter.R;
 import com.ceri.android.ucounter.data.db.CounterContract;
 import com.ceri.android.ucounter.data.db.CounterDbHelper;
+import com.ceri.android.ucounter.ui.CounterInfo;
 import com.ceri.android.ucounter.ui.CounterItemContract;
+import com.ceri.android.ucounter.ui.adapters.DrawerAdapter;
 import com.ceri.android.ucounter.ui.dialogs.AddNewCounterDialog;
 import com.ceri.android.ucounter.ui.dialogs.DeleteCounterDialog;
 import com.ceri.android.ucounter.ui.fragments.CounterSlidePageFragment;
 import com.ceri.android.ucounter.ui.presenters.CounterItemPresenter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CounterActivity extends AppCompatActivity implements CounterItemContract.View {
 
@@ -59,6 +66,14 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
     /** Empty View */
     private TextView mEmptyView;
 
+    /** Manages the list of counters inside the ListView of the drawer */
+    private DrawerAdapter mDrawerAdapter;
+
+    /** Holds the data for each counter within the menu */
+    private RecyclerView mRecyclerView;
+
+    /** Layout manager for the recycler view */
+    private LinearLayoutManager mLinearLayoutManager;
     /**
      * Overridden onCreate Function
      * @param savedInstanceState Takes the current state of the instance
@@ -91,8 +106,11 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         mPagerAdapter = new CounterSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
         mPager.setOffscreenPageLimit(3);
-        // Set Empty View
 
+        // Set Views within the drawers
+        mRecyclerView = findViewById(R.id.drawer_recycler_view);
+        mLinearLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLinearLayoutManager);
         //Set Up Toolbar and associated images
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorText));
@@ -117,26 +135,10 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         return this;
     }
 
-    /**
-     * @param menu is the associated menu item selected
-     * @return Action based on selected menu option and whether it was successful
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
-        Drawable drawable = getResources().getDrawable(R.drawable.icon_delete);
-        drawable.setColorFilter(getResources().getColor(R.color.colorText), PorterDuff.Mode.SRC_IN);
-        MenuItem menuItem = menu.findItem(R.id.action_delete_data);
-        menuItem.setIcon(drawable);
 
-        return true;
-    }
-
-
-
-    /**************************
-     * Screen Sliding Adapter
-     **************************/
+    ///**************************
+    //* Screen Sliding Adapter
+    //**************************/
     private class CounterSlidePagerAdapter extends FragmentStatePagerAdapter {
 
         /**
@@ -207,8 +209,29 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
 
     ///**************************
-    //* OnClick Utility for Drawers/Menus
-    //**************************/
+    //* Drawers/Menus
+    //***************************
+
+    /**
+     * @param menu is the associated menu item selected
+     * @return Action based on selected menu option and whether it was successful
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+
+        // Create delete icon and change its color to white
+        Drawable drawable = getResources().getDrawable(R.drawable.icon_delete);
+        drawable.setColorFilter(getResources().getColor(R.color.colorText), PorterDuff.Mode.SRC_IN);
+
+        // Set Menu
+        MenuItem menuItem = menu.findItem(R.id.action_delete_data);
+        menuItem.setIcon(drawable);
+
+        return true;
+    }
+
+
     /**
      * Performs certain drawer actions based on
      * @param item [Takes in item selected by the user]
@@ -231,20 +254,20 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
                 addFragment.show(mFragmentManager, "Add a counter");
                 toastMessage = "Add counter clicked!";
                 break;
-            case R.id.add_group:
-                // TODO: Add new counter group
-                toastMessage = "Add group clicked! (But nothing happened!) ";
-                break;
+//            case R.id.add_group:
+//                // TODO: Add new counter group
+//                toastMessage = "Add group clicked! (But nothing happened!) ";
+//                break;
             case R.id.drawer_settings:
                 Intent intent = new Intent(this, GeneralSettingsActivity.class);
                 startActivity(intent);
                 toastMessage = "Settings clicked!";
                 break;
-            case R.id.drawer_delete_all:
-                getContentResolver().delete(CounterContract.CounterEntry.CONTENT_URI, null, null);
-                SharedPreferences.Editor preferencesEditor = getSharedPreferences("com.ceri.android.counterprefs", MODE_PRIVATE).edit();
-                preferencesEditor.putInt("tailId", -1);
-                preferencesEditor.apply();
+//            case R.id.drawer_delete_all:
+//                getContentResolver().delete(CounterContract.CounterEntry.CONTENT_URI, null, null);
+//                SharedPreferences.Editor preferencesEditor = getSharedPreferences("com.ceri.android.counterprefs", MODE_PRIVATE).edit();
+//                preferencesEditor.putInt("tailId", -1);
+//                preferencesEditor.apply();
         }
         Toast.makeText(getBaseContext(), toastMessage,
                 Toast.LENGTH_SHORT).show();
@@ -263,6 +286,7 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
             // Returns the user back to the menu
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
+                setDrawerList();
                 return true;
 
             // Opens up Delete Notification to delete the current page item
@@ -306,6 +330,23 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         return super.onOptionsItemSelected(item);
     }
 
+    private void setDrawerList(){
+        // Create position list
+        List<Integer> positionList  = CounterItemPresenter.getPositionList(getBaseContext());
+
+        // Presenter is only used once in the CounterActivity class
+        CounterItemPresenter presenter = new CounterItemPresenter();
+        presenter.bind(this);
+
+        // Create drawer adapter
+        mDrawerAdapter = new DrawerAdapter(
+                getBaseContext(),
+                presenter.getCounterInfoList(positionList)
+        );
+
+        // Add data to the recycler view
+        mRecyclerView.setAdapter(mDrawerAdapter);
+    }
 
     // *************************
     // * Notification Utility

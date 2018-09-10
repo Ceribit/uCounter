@@ -8,6 +8,7 @@ import com.ceri.android.ucounter.ui.CounterInfo;
 import com.ceri.android.ucounter.ui.CounterItemContract;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CounterItemPresenter implements CounterItemContract.Presenter {
 
@@ -65,5 +66,14 @@ public class CounterItemPresenter implements CounterItemContract.Presenter {
     /** Returns CounterInfo from database given its id */
     public CounterInfo getCounterInfo(int id){
         return mDataController.getCounterData(id);
+    }
+
+    /** Returns list of CounterInfos from database given a list of positions */
+    public List<CounterInfo> getCounterInfoList(List<Integer> ids){
+        ArrayList<CounterInfo> counterInfoList = new ArrayList<>();
+        for(int i = 1; i < ids.size(); i++){
+            counterInfoList.add(mDataController.getCounterData(ids.get(i)));
+        }
+        return counterInfoList;
     }
 }
