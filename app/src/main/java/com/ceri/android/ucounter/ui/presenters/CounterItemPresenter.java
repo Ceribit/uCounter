@@ -1,6 +1,5 @@
 package com.ceri.android.ucounter.ui.presenters;
 
-import android.nfc.Tag;
 import android.support.annotation.Nullable;
 
 import com.ceri.android.ucounter.data.CounterDataController;
@@ -46,7 +45,7 @@ public class CounterItemPresenter implements CounterItemContract.Presenter {
     /** Retrieves array list of counter IDs */
     @Nullable
     public static ArrayList<Integer> getPositionList(Object view){
-        return CounterDataController.getPositionList(view);
+        return CounterDataController.getPositionListFromView(view);
     }
 
     /** Retrieves context from View to be used in Model */
@@ -65,14 +64,14 @@ public class CounterItemPresenter implements CounterItemContract.Presenter {
 
     /** Returns CounterInfo from database given its id */
     public CounterInfo getCounterInfo(int id){
-        return mDataController.getCounterData(id);
+        return mDataController.getCounterInfo(id);
     }
 
     /** Returns list of CounterInfos from database given a list of positions */
     public List<CounterInfo> getCounterInfoList(List<Integer> ids){
         ArrayList<CounterInfo> counterInfoList = new ArrayList<>();
         for(int i = 1; i < ids.size(); i++){
-            counterInfoList.add(mDataController.getCounterData(ids.get(i)));
+            counterInfoList.add(mDataController.getCounterInfo(ids.get(i)));
         }
         return counterInfoList;
     }

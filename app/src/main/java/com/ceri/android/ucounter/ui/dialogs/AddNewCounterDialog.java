@@ -6,6 +6,9 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -29,16 +32,25 @@ public class AddNewCounterDialog extends DialogFragment {
         mCounterDialogPresenter.attach(getContext());
 
         // Use builder class to construct dialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), getResources().getColor(R.color.colorAccent));
         LayoutInflater inflater = getActivity().getLayoutInflater();
+
+
         builder.setView(inflater.inflate(R.layout.counter_dialog_add, null));
 
-        // Set response value
+        SpannableString title = new SpannableString(getString(R.string.dialog_add_title));
+        title.setSpan(
+                new ForegroundColorSpan(getResources().getColor(R.color.colorPrimaryDark)),
+                0,
+                title.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+        builder.setTitle(title);
         // User clicked create counter
-        builder.setPositiveButton("Create new counter", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                EditText editText = getDialog().findViewById(R.id.new_counter_name);
+                EditText editText = getDialog().findViewById(R.id.dialog_counter_view);
                 String counterName= editText.getText().toString();
                 if(mCounterDialogPresenter.insertCounter(counterName, 0)){ // Inform user of new insert
                     Toast.makeText(getContext(), "New counter added", Toast.LENGTH_SHORT).show();
@@ -46,7 +58,6 @@ public class AddNewCounterDialog extends DialogFragment {
                 ((CounterActivity)getActivity()).notifyChange(MOVE_TO_END);
             }
         });
-
         // User clicked cancel button
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override

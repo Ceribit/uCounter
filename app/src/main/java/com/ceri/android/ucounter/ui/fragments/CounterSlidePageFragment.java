@@ -97,10 +97,11 @@ public class CounterSlidePageFragment extends Fragment implements CounterItemCon
             // Get values from database
             if(counterInfo.getId() != -1) {
                 mId = counterInfo.getId();
-                mName = "Name: " + counterInfo.getName() +
-                        "\nID: " + counterInfo.getId() +
-                        "\nValue: " + counterInfo.getValue() +
-                        "\nNext ID: " + counterInfo.getNext();
+                mName = counterInfo.getName();
+                //"Name: " + counterInfo.getName() +
+                //"\nID: " + counterInfo.getId() +
+                //"\nValue: " + counterInfo.getValue() +
+                //"\nNext ID: " + counterInfo.getNext();
 
                 mValue = counterInfo.getValue();
             }
@@ -120,12 +121,14 @@ public class CounterSlidePageFragment extends Fragment implements CounterItemCon
 
     // Updates the value of the displayed number
     public void setButtonClick(int step){
-        boolean hasChanged = mPresenter.updateCounter(mId, null , mValue, step);
-        if (hasChanged){
-            updateValue(mValue+step);
-            mValue += step;
-        } else{
-            Toast.makeText(getContext(), "Not Updated", Toast.LENGTH_SHORT).show();
+        if(mValue + step >= 0) {
+            boolean hasChanged = mPresenter.updateCounter(mId, null, mValue, step);
+            if (hasChanged) {
+                updateValue(mValue + step);
+                mValue += step;
+            } else {
+                Toast.makeText(getContext(), "Not Updated", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

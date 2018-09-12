@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.ceri.android.ucounter.R;
 import com.ceri.android.ucounter.ui.CounterInfo;
+import com.ceri.android.ucounter.ui.activities.CounterActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +27,13 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.CounterVie
     /** List of data */
     private List<CounterInfo> mList = new ArrayList<>();
 
-    public DrawerAdapter(Context context, List<CounterInfo> list) {
+    /** Parent Activity */
+    private CounterActivity mActivity;
+
+    public DrawerAdapter(CounterActivity activity, Context context, List<CounterInfo> list) {
         mContext = context;
         mList = list;
+        mActivity = activity;
     }
 
     /** Creates View Holders */
@@ -38,7 +43,6 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.CounterVie
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.counter_drawer_item, parent, false);
         CounterViewHolder counterViewHolder = new CounterViewHolder(view);
-        Log.e("DrawerAdapter", "Called");
         return counterViewHolder;
     }
 
@@ -54,6 +58,7 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.CounterVie
     public void onBindViewHolder(@NonNull CounterViewHolder holder, int position) {
         holder.mName.setText(mList.get(position).getName());
         holder.mValue.setText(String.valueOf(mList.get(position).getValue()));
+        holder.setOnClick(position);
     }
 
     @Override
@@ -61,14 +66,26 @@ public class DrawerAdapter extends RecyclerView.Adapter<DrawerAdapter.CounterVie
         return mList.size();
     }
 
+    /** Viewholder which gets IDs */
     class CounterViewHolder extends RecyclerView.ViewHolder{
         TextView mName;
         TextView mValue;
-
+        View mParentView;
         CounterViewHolder(View itemView) {
             super(itemView);
             mName = itemView.findViewById(R.id.counter_drawer_item_name);
             mValue = itemView.findViewById(R.id.counter_drawer_item_value);
+            mParentView = itemView;
+        }
+
+        /** Sets the view to move to it's associated page once clicked */
+        private void setOnClick(final int id){
+            mParentView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mActivity.movePage(id);
+                }
+            });
         }
     }
 

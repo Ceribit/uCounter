@@ -45,19 +45,24 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:overScrollMode="never"
+        android:fadingEdge="none"
+        android:isScrollContainer="false"
+        android:fadeScrollbars="false"
         >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:paddingTop="24dp"
             android:orientation="vertical">
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="?attr/actionBarSize"
+                android:layout_height="?android:attr/actionBarSize"
+                android:padding="16dp"
                 android:background="@color/colorPrimary"
                 android:gravity="center"
-                android:text="uColor Navigation"
+                android:text="@string/menu_navigation_box"
                 android:textColor="@color/colorText"
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"/>
 
@@ -65,8 +70,13 @@
                 android:id="@+id/nav_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:overScrollMode="never"
+                android:fadingEdge="none"
                 app:menu="@menu/drawer_menu"
-                app:elevation="0dp">
+                app:elevation="0dp"
+                app:itemBackground="@android:color/transparent"
+                app:itemTextColor="@android:color/black">
+
             </android.support.design.widget.NavigationView>
 
             <android.support.v7.widget.RecyclerView
@@ -74,6 +84,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
                 android:overScrollMode="never">
             </android.support.v7.widget.RecyclerView>
 

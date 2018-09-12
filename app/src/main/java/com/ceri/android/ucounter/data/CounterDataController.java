@@ -1,5 +1,6 @@
 package com.ceri.android.ucounter.data;
 
+import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -8,7 +9,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -20,19 +20,19 @@ import java.util.ArrayList;
 
 public class CounterDataController {
 
-    // Context of the view, needed to access the ContentResolver
+    /** Context of the view, needed to access the ContentResolver */
     private Context mContext;
 
-    // Links to ContentProvider to access database
+    /** Links to ContentProvider to access database */
     private ContentResolver mContentResolver;
 
-    // Is used to store the last value in the table (may not be needed)
+    /** Is used to store the last value in the table (may not be needed) */
     private SharedPreferences mPreferences;
 
-    // Holds the location of the SharedPrefFile
+    /** Holds the location of the SharedPrefFile */
     private String sharedPrefFile = "com.ceri.android.counterprefs";
 
-    // Debug tag
+    /** Tag used for debugging with Log function */
     private static String TAG = CounterDataController.class.getSimpleName();
 
 
@@ -40,13 +40,13 @@ public class CounterDataController {
     }
 
 
-    // Sets context
+    /** Sets context member variable */
     public void setContext(Object context){
         mContext = (Context) context;
         mContentResolver = mContext.getContentResolver();
     }
 
-    // Changes the recorded id of the tail
+    /** Updates the recorded SharedPreferences with a new ID */
     private void setTailIdPreference(int id){
         mPreferences = mContext.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE);
         SharedPreferences.Editor preferencesEditor = mPreferences.edit();
@@ -55,13 +55,9 @@ public class CounterDataController {
     }
 
 
-//    /****************************
-//     *
-//     *
-//     * Insert
-//     *
-//     *
-//     ****************************/
+    // ********************
+    // * Insert
+    // ********************
 
 
     // TODO: Create a Linked List that will keep the data sorted
@@ -76,7 +72,7 @@ public class CounterDataController {
      * @param initialValue The initial value of the new counter entry
      * @return Returns a boolean variable which states whether the insert was successful or not
      */
-    public boolean appendCounter(String name, int initialValue){
+    public boolean append(String name, int initialValue){
         // Update mPreferences
         mPreferences = mContext.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE);
 
@@ -86,13 +82,20 @@ public class CounterDataController {
         contentValues.put(CounterContract.CounterEntry.COLUMN_COUNTER_COUNT, initialValue);
         contentValues.put(CounterContract.CounterEntry.COLUMN_COUNTER_NEXT, -1);
 
-        // Gets last recorded tailId
-        int tailId = mPreferences.getInt("tailId", -1);
-        Log.i(TAG, "AppendCounter : LastRecordedTailId =  " + tailId );
 
+        // Applies LinkedList insertion based on the if there was a recorded tail0
+        return appendToTable(contentValues);
+    }
+
+    /** Manages insertion to the table based on the current table's condition
+     * Conditions:
+     *  1. Table not yet created -> Creates head and appends to default head
+     *  2. Table created with stored TailId -> Appends to tail
+     *  3. Table created with lost TailId -> TailId is refreshed and new counter is appended to it
+     * */
+    private boolean appendToTable(ContentValues contentValues){
         // Gets size of table
-        int rowCount =
-                (mContentResolver.call(CounterEntry.CONTENT_URI,"getRowCount",
+        int rowCount =  (mContentResolver.call(CounterEntry.CONTENT_URI,"getRowCount",
                         null, null).getInt("numRows"));
 
         // Initializes table if not yet created
@@ -102,20 +105,35 @@ public class CounterDataController {
             Log.i(TAG, "AppendCounter: Table already initialized." );
         }
 
+        // Gets shared preferences
+        mPreferences = mContext.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE);
 
-        // Applies LinkedList insertion based on the if there was a recorded tail
-        if ( tailId == -1) { // Not yet initialized
-            // TODO: Check if SharedPreferences was deleted
+        // Appends value based on existing tail
+        int tailId = refreshTail();
+        if (tailId == -1) { // Not yet initialized
             Log.e(this.getClass().getSimpleName(), "Tail Id was -1");
             appendToHead(contentValues);
         } else{ // Only one value
-            append(contentValues, tailId);
+            appendToTail(contentValues, tailId);
         }
 
-        // Returns successful insertion
         return true;
     }
 
+    /** Refreshes tail in case sharedpreferences were deleted.
+     *  Returns true if the tail is still -1 (meaning that the tail and head are the same)
+     *      and false if the tail was refreshed and found not to be -1 */
+    private int refreshTail(){
+        int tailId = mPreferences.getInt("tailId", -1);
+        if(tailId == -1){
+            ArrayList<Integer> list = getPositionList(mContext.getContentResolver());
+            if(list.size() > 1){
+                tailId = list.get(list.size()-2); // Gets last (not -1)id of the nextNode list
+            }
+        }
+        mPreferences.edit().putInt("tailId", tailId).apply();
+        return tailId;
+    }
 
     /** If the database is empty, this creates a new head */
     private void insertHead(){
@@ -159,8 +177,8 @@ public class CounterDataController {
 
 
 
-    /** Updates the database linkedlist to have its last value as the new element */
-    private void append(ContentValues contentValue, int lastId){
+    /** Updates the database linked list through the tail  */
+    private void appendToTail(ContentValues contentValue, int lastId){
         // Create a new value in the table using the given contentValue
         Uri newCounterUri = mContentResolver.insert(CounterEntry.CONTENT_URI, contentValue);
         long newCounterId = ContentUris.parseId(newCounterUri);
@@ -188,21 +206,21 @@ public class CounterDataController {
 
 
 
-    //***************************
-    //*
-    //*
-    //* Data Retrieval
-    //*
-    //*
-    //***************************
+    // ********************
+    // * Data Retrieval
+    // ********************
 
     /**
      * Returns an array list of each id, where the integer's index is an ID and its placement is its
      * position in the PageAdapter
      * */
-    public static ArrayList<Integer> getPositionList(Object view){
+    public static ArrayList<Integer> getPositionListFromView(Object view){
         ContentResolver content = ((Context)view).getContentResolver();
+        return getPositionList(content);
+    }
 
+    /** Gets Position List given a content resolver */
+    private static ArrayList<Integer> getPositionList(ContentResolver contentResolver){
         // Initialize query variables
         String[] projection = {
                 CounterEntry._ID,
@@ -213,12 +231,11 @@ public class CounterDataController {
         ArrayList<Integer> arrayList = new ArrayList<>();
         arrayList.add(1);
 
-        int currentNode = 1;
-
         // Keep moving through the linked list until you reach the end
+        int currentNode = 1;
         while(currentNode != -1){
             // Given a node's id, it finds the next value of the node
-            Cursor cursor = content.query(
+            Cursor cursor = contentResolver.query(
                     CounterEntry.CONTENT_URI,
                     projection,
                     selection,
@@ -229,7 +246,7 @@ public class CounterDataController {
             // Sets the current node to be the next's
             try{
                 currentNode = cursor.getInt(cursor.getColumnIndex(CounterEntry.COLUMN_COUNTER_NEXT));
-                selectionArgs[0] = String.valueOf(currentNode);
+                selectionArgs[0] = String.valueOf(currentNode); //Move node forward in selection
                 // Add the found node to the array list
                 if(currentNode!=-1) {
                     arrayList.add(currentNode);
@@ -245,9 +262,12 @@ public class CounterDataController {
     }
 
 
-
-    /** Returns a CounterInfo object (id, name, value, next) given an id */
-    public CounterInfo getCounterData(int id){
+    /**
+     * Returns data of a Counter given an ID
+     * @param id ID of the counter who's information you need to get
+     * @return CounterInfo object containing the ID, name, value, and next attributes of a counter
+     */
+    public CounterInfo getCounterInfo(int id){
         CounterInfo counterInfo = new CounterInfo();
 
         String selection = CounterEntry._ID + "=?";
@@ -274,13 +294,9 @@ public class CounterDataController {
     }
 
 
-    //***************************
-    //*
-    //*
-    //* Update
-    //*
-    //*
-    //***************************
+    // ********************
+    // * Update
+    // ********************
 
     /**
      *  Updates a given id with a new value and/or name
@@ -319,20 +335,16 @@ public class CounterDataController {
         return (rowsUpdated > 0);
     }
 
-        ///****************************
-        // *
-        // *
-        // * Delete
-        // *
-        // *
-        // ****************************/
+    // ********************
+    // * Delete
+    // ********************
 
     /**
-     * LinkedList delete implementation:
-     *      Replaces the previous counter's "NEXT" and replaces it with the current counter's "NEXT"
-     *      This then deletes the current counter from the database
-     * */
-    public boolean deleteCounter(int id){
+     * Linked List delete function
+     * @param id ID of the counter you want to delete
+     * @return Successful deletion of the Counter from the database
+     */
+    public boolean delete(int id){
         // Creates query arguments
         String deleteSelection = CounterEntry._ID + "=?";
         String selectionArgs[] = {String.valueOf(id)};
@@ -368,7 +380,6 @@ public class CounterDataController {
         // Get Content Resolver
         mContentResolver = mContext.getContentResolver();
         String idSelection = CounterEntry._ID + "=?";
-        String updateSelection = CounterEntry.COLUMN_COUNTER_NEXT + "=?";
         String selectionArgs[] = {String.valueOf(id)};
 
         // Query to find what the deleted value pointed to
@@ -386,52 +397,51 @@ public class CounterDataController {
             // Move cursor to the beginning
             currentNode.moveToFirst();
 
-            // Get what the current value points to
-            int currentNodeNext = currentNode.getInt(
-                    currentNode.getColumnIndex(CounterEntry.COLUMN_COUNTER_NEXT));
-            currentNode.close();
-            Log.e(TAG, "replacePrevId: currentNodeNext=" + currentNodeNext);
-
-            // Update previous node to point to CurrentNode's Next
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(CounterEntry.COLUMN_COUNTER_NEXT, currentNodeNext);
-            long rowsUpdated = mContentResolver.update(
-                    CounterEntry.CONTENT_URI,
-                    contentValues,
-                    updateSelection,
-                    new String[]{String.valueOf(id)}
-            );
-
-            // If delete node is at the end, update SharedPreference's tailId
-            if(currentNodeNext == -1){
-                // Find past node
-                Cursor prevNode = mContentResolver.query(
-                        CounterEntry.CONTENT_URI,
-                        null,
-                        updateSelection,
-                        new String[]{String.valueOf(-1)},
-                        null
-                );
-
-                // Move Counter to the beginning
-                prevNode.moveToFirst();
-                Log.e(TAG, "Replace Tail Function: Tail replaced with " +
-                                prevNode.getColumnIndex(CounterEntry._ID));
-                setTailIdPreference(prevNode.getInt(prevNode.getColumnIndex(CounterEntry._ID)));
-            }
-            // If a row was updated
-            if(rowsUpdated != 0){
-                return true;
-            } else{
-
-                // Unsuccessful update
-                Log.i(TAG, "Replace Tail Function: 0 rows updated");
-                return false;
-            }
+            // Return the successful of inserting the previous counter
+            return updatePreviousCounter(currentNode, id);
         } else{
-
             // Unsuccessful update
             return false;
         }
+    }
+
+    /**
+     *  Returns the update status of the counter previous of counter previous of the one that
+     *  has to be deleted
+     *  */
+    private boolean updatePreviousCounter(Cursor currentNode, int id){
+        String updateSelection = CounterEntry.COLUMN_COUNTER_NEXT + "=?";
+
+        // Gets id of next node
+        int currentNodeNext = currentNode.getInt(
+                currentNode.getColumnIndex(CounterEntry.COLUMN_COUNTER_NEXT));
+        currentNode.close();
+
+        // Updates previous counter's next value
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(CounterEntry.COLUMN_COUNTER_NEXT, currentNodeNext);
+        long rowsUpdated = mContentResolver.update(
+                CounterEntry.CONTENT_URI,
+                contentValues,
+                updateSelection,
+                new String[]{String.valueOf(id)} // Searches counter where the next is the one to
+                                                 // be deleted
+        );
+
+        // If delete node is at the end, update SharedPreference's tailId
+        if(currentNodeNext == -1){
+            // Find past node
+            Cursor prevNode = mContentResolver.query( CounterEntry.CONTENT_URI,
+                    null,
+                    updateSelection,
+                    new String[]{String.valueOf(-1)},
+                    null
+            );
+            // Move Counter to the beginning
+            prevNode.moveToFirst();
+            Log.i(TAG, "Tail replaced with " + prevNode.getColumnIndex(CounterEntry._ID));
+            setTailIdPreference(prevNode.getInt(prevNode.getColumnIndex(CounterEntry._ID)));
+        }
+        return rowsUpdated != 0;
     }
 }

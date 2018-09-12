@@ -18,6 +18,7 @@ public final class CounterContract{
 
     /** CounterEntry defines the Counter table columns and associated names */
     public static abstract class CounterEntry implements BaseColumns{
+
         // Content Value Types
         public static final String CONTENT_TYPE = "vnd.android.cursor.dir/text";
         public static final String CONTENT_LIST_TYPE =

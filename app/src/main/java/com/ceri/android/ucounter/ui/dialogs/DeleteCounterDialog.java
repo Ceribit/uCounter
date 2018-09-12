@@ -29,7 +29,9 @@ public class DeleteCounterDialog extends DialogFragment {
         // Use builder class to construct dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
-            builder.setView(inflater.inflate(R.layout.counter_dialog_delete, null));
+
+        builder.setTitle(R.string.dialog_delete_title);
+        builder.setMessage(R.string.dialog_delete_message);
 
         // User clicked delete counter
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
@@ -59,7 +61,7 @@ public class DeleteCounterDialog extends DialogFragment {
         return builder.create();
     }
 
-        // Get id
+    // Get id
         public void setId(int id, int pos, int size){
             Log.e("DeleteCounterDialog57", "You notified me Mr.  " + id);
             currentFragmentId = id;

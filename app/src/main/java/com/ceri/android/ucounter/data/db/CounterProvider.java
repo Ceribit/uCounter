@@ -251,10 +251,7 @@ public class CounterProvider extends ContentProvider {
     }
 
 
-    // ********************
-    // Type
-    // ********************
-
+    /** Gets Content Item Type*/
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
@@ -271,6 +268,7 @@ public class CounterProvider extends ContentProvider {
     // Utility Functions
     // ********************
 
+    /** Customized calls to access the counter provider */
     @Nullable
     @Override
     public Bundle call(@NonNull String method, @Nullable String arg, @Nullable Bundle extras) {
@@ -282,6 +280,7 @@ public class CounterProvider extends ContentProvider {
         return bundle;
     }
 
+    /** Gets number of rows in the Counter Table */
     public int getRowCount() {
         mDatabase = mCounterDbHelper.getReadableDatabase();
         return (int) DatabaseUtils.queryNumEntries(mDatabase, CounterEntry.TABLE_NAME);

@@ -42,6 +42,7 @@ import com.ceri.android.ucounter.ui.presenters.CounterItemPresenter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class CounterActivity extends AppCompatActivity implements CounterItemContract.View {
 
@@ -74,6 +75,10 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
     /** Layout manager for the recycler view */
     private LinearLayoutManager mLinearLayoutManager;
+
+    /** Menu's Navigation View*/
+    private NavigationView mNavigationView;
+
     /**
      * Overridden onCreate Function
      * @param savedInstanceState Takes the current state of the instance
@@ -88,11 +93,31 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
         // Set up Fragment Manager
         mFragmentManager = getSupportFragmentManager();
+        setLayouts();
+        setToolbars();
 
+        //TODO: Set addDrawerListener
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {setDrawerList();}
+    }
+
+    /** Returns activity context for the model */
+    @Override
+    public Object getViewContext() {
+        return this;
+    }
+
+    /** Sets Drawer and View Pagers */
+    public void setLayouts(){
         //Set Up Navigation Panel
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView =  findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(
+        mNavigationView =  findViewById(R.id.nav_view);
+
+        mNavigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -111,6 +136,10 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         mRecyclerView = findViewById(R.id.drawer_recycler_view);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
+    }
+
+    /** Sets up Toolbar Icons */
+    public void setToolbars(){
         //Set Up Toolbar and associated images
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitleTextColor(getResources().getColor(R.color.colorText));
@@ -123,22 +152,12 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         drawable = DrawableCompat.wrap(drawable);
         DrawableCompat.setTint(drawable, getResources().getColor(R.color.colorText));
         actionBar.setHomeAsUpIndicator(drawable);
-
-        /** TODO: Set addDrawerListener */
-
-
     }
-
-    /** Returns activity context for the model */
-    @Override
-    public Object getViewContext() {
-        return this;
-    }
-
 
     ///**************************
     //* Screen Sliding Adapter
     //**************************/
+    /** Manages the scrolling Counter Fragments on the page main */
     private class CounterSlidePagerAdapter extends FragmentStatePagerAdapter {
 
         /**
@@ -197,11 +216,16 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         }
     }
 
+    /** Allows outside classes to move the selected page */
+    public void movePage(int position){
+        mDrawerLayout.closeDrawers();
+        mPager.setCurrentItem(position);
+    }
 
     @Override
     public void onBackPressed() {
         if(mPager.getCurrentItem() == 0){
-            super.onBackPressed();
+            mDrawerLayout.openDrawer(GravityCompat.START);
         } else{
             mPager.setCurrentItem(mPager.getCurrentItem() - 1);
         }
@@ -221,12 +245,20 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
 
         // Create delete icon and change its color to white
-        Drawable drawable = getResources().getDrawable(R.drawable.icon_delete);
-        drawable.setColorFilter(getResources().getColor(R.color.colorText), PorterDuff.Mode.SRC_IN);
+        Drawable deleteIcon = getResources().getDrawable(R.drawable.icon_delete);
+        deleteIcon.setColorFilter(getResources().getColor(R.color.colorBackground), PorterDuff.Mode.SRC_ATOP);
+        deleteIcon.setAlpha(255);
+
+        // Create preferences icon and change its color to white
+        Drawable modifyIcon = getResources().getDrawable(R.drawable.icon_edit);
+        modifyIcon.setColorFilter(getResources().getColor(R.color.colorBackground), PorterDuff.Mode.SRC_ATOP);
+        modifyIcon.setAlpha(255);
 
         // Set Menu
-        MenuItem menuItem = menu.findItem(R.id.action_delete_data);
-        menuItem.setIcon(drawable);
+        MenuItem deleteItem = menu.findItem(R.id.action_delete_data);
+        deleteItem.setIcon(deleteIcon);
+        MenuItem modifyItem = menu.findItem(R.id.action_counter_settings);
+        modifyItem.setIcon(modifyIcon);
 
         return true;
     }
@@ -254,20 +286,11 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
                 addFragment.show(mFragmentManager, "Add a counter");
                 toastMessage = "Add counter clicked!";
                 break;
-//            case R.id.add_group:
-//                // TODO: Add new counter group
-//                toastMessage = "Add group clicked! (But nothing happened!) ";
-//                break;
             case R.id.drawer_settings:
                 Intent intent = new Intent(this, GeneralSettingsActivity.class);
                 startActivity(intent);
                 toastMessage = "Settings clicked!";
                 break;
-//            case R.id.drawer_delete_all:
-//                getContentResolver().delete(CounterContract.CounterEntry.CONTENT_URI, null, null);
-//                SharedPreferences.Editor preferencesEditor = getSharedPreferences("com.ceri.android.counterprefs", MODE_PRIVATE).edit();
-//                preferencesEditor.putInt("tailId", -1);
-//                preferencesEditor.apply();
         }
         Toast.makeText(getBaseContext(), toastMessage,
                 Toast.LENGTH_SHORT).show();
@@ -340,6 +363,7 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
         // Create drawer adapter
         mDrawerAdapter = new DrawerAdapter(
+                this,
                 getBaseContext(),
                 presenter.getCounterInfoList(positionList)
         );
