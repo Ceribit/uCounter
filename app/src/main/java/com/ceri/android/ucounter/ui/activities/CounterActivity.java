@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -21,28 +22,24 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ceri.android.ucounter.R;
-import com.ceri.android.ucounter.data.db.CounterContract;
 import com.ceri.android.ucounter.data.db.CounterDbHelper;
-import com.ceri.android.ucounter.ui.CounterInfo;
 import com.ceri.android.ucounter.ui.CounterItemContract;
 import com.ceri.android.ucounter.ui.adapters.DrawerAdapter;
 import com.ceri.android.ucounter.ui.dialogs.AddNewCounterDialog;
 import com.ceri.android.ucounter.ui.dialogs.DeleteCounterDialog;
 import com.ceri.android.ucounter.ui.fragments.CounterSlidePageFragment;
+import com.ceri.android.ucounter.ui.fragments.OnboardingFrag;
 import com.ceri.android.ucounter.ui.presenters.CounterItemPresenter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class CounterActivity extends AppCompatActivity implements CounterItemContract.View {
 
@@ -87,6 +84,12 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.counter_page_main);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if(sharedPreferences.getBoolean(OnboardingFrag.COMPLETED_ONBOARDING, false)) {
+            // This is the first time running the app, let's go to onboarding
+            startActivity(new Intent(this, OnboardingActivity.class));
+        }
 
         // Set up database
         mDbHelper = new CounterDbHelper(this);
