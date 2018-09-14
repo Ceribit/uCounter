@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ceri.android.ucounter">
+    package="com.ceribit.android.ucounter">
     <uses-feature android:name="android.software.leanback" />
-    <uses-feature android:name="android.hardware.screen.portrait"/>
     <uses-feature android:name="android.hardware.touchscreen"
         android:required="false"/>
+
     <!--android:label="@string/app_name"-->
     <application
         android:allowBackup="true"
@@ -12,17 +12,24 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name="com.ceri.android.ucounter.ui.activities.CounterActivity">
+        android:theme="@style/AppTheme"
+        android:screenOrientation="portrait">
+
+        <activity
+            android:name="com.ceribit.android.ucounter.ui.activities.CounterActivity"
+            android:screenOrientation="portrait">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
-            android:name="com.ceri.android.ucounter.ui.activities.OnboardingActivity"
+            android:name="com.ceribit.android.ucounter.ui.activities.OnboardingActivity"
             android:enabled="true"
             android:exported="true"
+            android:screenOrientation="portrait"
             >
             <intent-filter>
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
@@ -31,16 +38,19 @@
 
 
         <activity
-            android:name="com.ceri.android.ucounter.ui.activities.CounterEditorActivity"
+            android:name="com.ceribit.android.ucounter.ui.activities.CounterEditorActivity"
             android:theme="@style/EditorTheme"
             android:parentActivityName=".ui.activities.CounterActivity"
+            android:screenOrientation="portrait"
             android:label="Counter Editor"/>
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.ceri.android.ucounter.ui.activities.CounterActivity" />
+                android:value="com.ceribit.android.ucounter.ui.activities.CounterActivity" />
+
         <provider
-            android:authorities="com.ceri.android.ucounter"
-            android:name="com.ceri.android.ucounter.data.db.CounterProvider"
+            android:authorities="com.ceribit.android.ucounter"
+            android:name="com.ceribit.android.ucounter.data.db.CounterProvider"
             android:exported="false"/>
 
     </application>

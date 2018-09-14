@@ -2,6 +2,6 @@
 
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/onboarding_fragment"
-    android:name="com.ceri.android.ucounter.ui.fragments.WelcomeFragment"
+    android:name="com.ceribit.android.ucounter.ui.fragments.WelcomeFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"/>
