@@ -5,9 +5,5 @@
             android:id="@+id/add_counter"
             android:title="@string/menu_dialog_add_counter"
             android:icon="@drawable/fab_add_icon" />
-        <item
-            android:id="@+id/drawer_settings"
-            android:title="@string/menu_settings"
-            android:icon="@android:drawable/ic_menu_preferences"/>
     </group>
 </menu>

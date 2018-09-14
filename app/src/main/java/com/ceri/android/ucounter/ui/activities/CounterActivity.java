@@ -26,7 +26,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ceri.android.ucounter.R;
 import com.ceri.android.ucounter.data.db.CounterDbHelper;
@@ -35,7 +34,7 @@ import com.ceri.android.ucounter.ui.adapters.DrawerAdapter;
 import com.ceri.android.ucounter.ui.dialogs.AddNewCounterDialog;
 import com.ceri.android.ucounter.ui.dialogs.DeleteCounterDialog;
 import com.ceri.android.ucounter.ui.fragments.CounterSlidePageFragment;
-import com.ceri.android.ucounter.ui.fragments.OnboardingFrag;
+import com.ceri.android.ucounter.ui.fragments.WelcomeFragment;
 import com.ceri.android.ucounter.ui.presenters.CounterItemPresenter;
 
 import java.util.ArrayList;
@@ -86,7 +85,7 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         setContentView(R.layout.counter_page_main);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        if(sharedPreferences.getBoolean(OnboardingFrag.COMPLETED_ONBOARDING, false)) {
+        if(!sharedPreferences.getBoolean(WelcomeFragment.COMPLETED_ONBOARDING, false)) {
             // This is the first time running the app, let's go to onboarding
             startActivity(new Intent(this, OnboardingActivity.class));
         }
@@ -281,22 +280,13 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
         // TODO: Update UI based on item selected
         int menuId = item.getItemId();
-        String toastMessage = "Nothing clicked";
         switch (menuId){
             case R.id.add_counter:
                 // Add new counter
                 AddNewCounterDialog addFragment = new AddNewCounterDialog();
                 addFragment.show(mFragmentManager, "Add a counter");
-                toastMessage = "Add counter clicked!";
-                break;
-            case R.id.drawer_settings:
-                Intent intent = new Intent(this, GeneralSettingsActivity.class);
-                startActivity(intent);
-                toastMessage = "Settings clicked!";
                 break;
         }
-        Toast.makeText(getBaseContext(), toastMessage,
-                Toast.LENGTH_SHORT).show();
         return true;
     }
 
@@ -332,7 +322,6 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
 
                 // Show fragment to the screen
                 deleteFragment.show(mFragmentManager, "Delete a counter");
-                Toast.makeText(this, "Delete button clicked.", Toast.LENGTH_SHORT).show();
                 break;
 
             // Opens up the settings page for the current page item

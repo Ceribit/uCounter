@@ -12,7 +12,7 @@ import android.widget.ImageView;
 
 import com.ceri.android.ucounter.R;
 
-public class OnboardingFrag extends android.support.v17.leanback.app.OnboardingSupportFragment {
+public class WelcomeFragment extends android.support.v17.leanback.app.OnboardingSupportFragment {
 
     public static final String COMPLETED_ONBOARDING = "completed_onboarding";
     private ImageView mContentView;

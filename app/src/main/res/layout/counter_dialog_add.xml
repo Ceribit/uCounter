@@ -23,6 +23,7 @@
             android:textColorLink="@android:color/black"
             android:hint="@string/dialog_add_hint"
             android:maxLines="1"
+            android:inputType="text"
             />
 
     </android.support.design.widget.TextInputLayout>
