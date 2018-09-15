@@ -17,7 +17,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="11dp"
-            android:textColor="@color/colorPrimaryDark"
             android:textColorHint="@android:color/black"
             android:textColorHighlight="@android:color/black"
             android:textColorLink="@android:color/black"

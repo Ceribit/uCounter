@@ -1,83 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
 >
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="General"
-        android:textAllCaps="true"
-        android:layout_marginLeft="24dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:textAppearance="?android:textAppearanceMedium"/>
-    <!-- First Box -->
     <LinearLayout
-        android:orientation="horizontal" android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:background="@color/colorBackground"
+        android:orientation="vertical">
+
 
         <TextView
-            android:id="@+id/editor_item_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:hint="Title"
-            android:text="Name"
-            android:textAppearance="?android:textAppearanceSmall"/>
+            android:text="General"
+            android:textAllCaps="true"
+            android:layout_marginLeft="24dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@color/colorPrimaryDark"/>
+        <!-- First Box -->
+        <LinearLayout
+            android:orientation="horizontal" android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp">
 
-        <EditText
-            android:id="@+id/editor_item_name_input"
+            <TextView
+                android:id="@+id/editor_item_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:hint="Title"
+                android:text="Name"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:textColor="@color/colorPrimaryDark"/>
+
+            <EditText
+                android:id="@+id/editor_item_name_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="48dp"
+                android:layout_marginStart="48dp"
+                android:hint="Bob"
+                android:textAppearance="?android:textAppearanceMedium"/>
+        </LinearLayout>
+
+
+
+        <!-- Second Box -->
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="48dp"
-            android:layout_marginStart="48dp"
-            android:hint="Bob"
-            android:textAppearance="?android:textAppearanceMedium"
-            android:background="@android:color/transparent"/>
+            android:layout_margin="8dp">
+            <TextView
+                android:id="@+id/editor_item_label2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:hint="Title"
+                android:text="Value"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:textColor="@color/colorPrimaryDark"/>
+
+            <EditText
+                android:id="@+id/editor_item_value_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="48dp"
+                android:layout_marginStart="48dp"
+                android:hint="Input"
+                android:textAppearance="?android:textAppearanceMedium"/>
+        </LinearLayout>
+
     </LinearLayout>
-
-
-
-    <!-- Second Box -->
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp">
-        <TextView
-            android:id="@+id/editor_item_label2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:hint="Title"
-            android:text="Value"
-            android:textAppearance="?android:textAppearanceSmall"
-            android:background="@android:color/transparent"/>
-
-        <EditText
-            android:id="@+id/editor_item_value_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="48dp"
-            android:layout_marginStart="48dp"
-            android:hint="Input"
-            android:textAppearance="?android:textAppearanceMedium"
-            android:background="@android:color/transparent"/>
-    </LinearLayout>
-
-    <!-- Divider -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#000000"/>
-
-
 
 
 </LinearLayout>

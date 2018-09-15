@@ -125,7 +125,6 @@ public class CounterProvider extends ContentProvider {
             case COUNTER:
                 return insertCounter(uri, contentValues);
             case COUNTER_ID:
-                Log.e(TAG, "Counter_ID switch statement ran.");
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }
@@ -154,7 +153,6 @@ public class CounterProvider extends ContentProvider {
         long id = mDatabase.insert(CounterContract.CounterEntry.TABLE_NAME, null, contentValues);
 
         if(id == -1){
-            Log.e(TAG, "Failed to insert counter into the database");
         }
         getContext().getContentResolver().notifyChange(uri, null);
 

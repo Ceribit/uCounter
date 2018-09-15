@@ -20,7 +20,6 @@ public class CounterDialogPresenter implements CounterItemContract.Presenter {
     }
 
     public Boolean insertCounter(String name, int initialValue){
-        Log.e(TAG, "Name: " + name);
         return mDataController.append(name, initialValue);
     }
 

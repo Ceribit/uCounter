@@ -41,10 +41,8 @@ public class DeleteCounterDialog extends DialogFragment {
 
                 if(mCounterDialogPresenter.deleteCounter(currentFragmentId)){
                     Toast.makeText(getContext(), "Counter Deleted", Toast.LENGTH_SHORT).show();
-                    Log.e("DeleteCounterDialog", "No error in deleting counter");
                     parentActivity.notifyChange(currentFragmentPos-1);
                 } else{
-                    Log.e("DeleteCounterDialog", "Error in deleting counter");
                     parentActivity.notifyChange(currentFragmentPos);
                 }
             }
@@ -63,7 +61,6 @@ public class DeleteCounterDialog extends DialogFragment {
 
     // Get id
         public void setId(int id, int pos, int size){
-            Log.e("DeleteCounterDialog57", "You notified me Mr.  " + id);
             currentFragmentId = id;
             currentFragmentPos = pos;
         }

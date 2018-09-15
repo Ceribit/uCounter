@@ -101,8 +101,6 @@ public class CounterDataController {
         // Initializes table if not yet created
         if (rowCount == 0) { // If table is empty, add a head
             insertHead();
-        } else{
-            Log.i(TAG, "AppendCounter: Table already initialized." );
         }
 
         // Gets shared preferences
@@ -111,7 +109,6 @@ public class CounterDataController {
         // Appends value based on existing tail
         int tailId = refreshTail();
         if (tailId == -1) { // Not yet initialized
-            Log.e(this.getClass().getSimpleName(), "Tail Id was -1");
             appendToHead(contentValues);
         } else{ // Only one value
             appendToTail(contentValues, tailId);
@@ -148,7 +145,6 @@ public class CounterDataController {
 
     /** If the head is the only value, this updates it to point towards a new counter */
     private void appendToHead(ContentValues contentValue){
-        Log.i(TAG, "AppendToHead : Value attached to head");
 
         // Create a new value in the table using the given contentValue
         Uri newCounterUri = mContentResolver.insert(CounterContract.CounterEntry.CONTENT_URI, contentValue);
@@ -252,7 +248,6 @@ public class CounterDataController {
                     arrayList.add(currentNode);
                 }
             } catch (CursorIndexOutOfBoundsException e){
-                //Log.e(TAG, "Cursor was out of bounds");
                 cursor.close();
                 return arrayList;
             }
@@ -319,7 +314,6 @@ public class CounterDataController {
 
         // Updates name if it exists
         if(name != null){
-            Log.e(TAG, "Name was not equal to null and added: " + name);
             contentValue.put(CounterEntry.COLUMN_COUNTER_NAME, name);
         }
 
@@ -351,7 +345,6 @@ public class CounterDataController {
 
         // Changes the id of the counter pointing to this one
         boolean isSuccessful = replacePrevId(id);
-        Log.e(TAG, "Attempting to delete" + deleteSelection + " with id=" + String.valueOf(id) );
         // Delete the requested value
         long rowsDeleted = mContentResolver.delete(
                 CounterEntry.CONTENT_URI,
@@ -364,7 +357,6 @@ public class CounterDataController {
             isSuccessful = false;
 
         }
-        Log.e(TAG, "DeleteCounter : Rows deleted = " + rowsDeleted);
         return rowsDeleted>0;
     }
 
@@ -375,7 +367,6 @@ public class CounterDataController {
      *  given counter's id
      *  */
     private boolean replacePrevId(int id){
-        Log.e(TAG, "replacePrevId: Id=" + id);
 
         // Get Content Resolver
         mContentResolver = mContext.getContentResolver();
@@ -439,7 +430,6 @@ public class CounterDataController {
             );
             // Move Counter to the beginning
             prevNode.moveToFirst();
-            Log.i(TAG, "Tail replaced with " + prevNode.getColumnIndex(CounterEntry._ID));
             setTailIdPreference(prevNode.getInt(prevNode.getColumnIndex(CounterEntry._ID)));
         }
         return rowsUpdated != 0;

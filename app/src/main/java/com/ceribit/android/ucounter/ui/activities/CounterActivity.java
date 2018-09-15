@@ -172,7 +172,6 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
         CounterSlidePagerAdapter(FragmentManager fm) {
             super(fm);
             positionList = CounterItemPresenter.getPositionList(getBaseContext());
-            Log.i(TAG, "Position list Array = " + positionList.toString());
         }
 
         /** Returns the counter fragment of a given position */
@@ -309,8 +308,6 @@ public class CounterActivity extends AppCompatActivity implements CounterItemCon
             case R.id.action_delete_data:
                 if(mPagerAdapter.getCount() > 0) {
                     int pagePosition = mPager.getCurrentItem();
-                    Log.e(TAG, "onOptionsItemSelected : Delete_Data ID Provided = "
-                            + mPagerAdapter.getIdAtPosition(mPager.getCurrentItem()));
 
                     DeleteCounterDialog deleteFragment = new DeleteCounterDialog();
 

@@ -40,7 +40,7 @@ public class CounterInfo {
         try{
             mValue = Integer.parseInt(sValue);
         } catch (NumberFormatException e){
-            Log.e(CounterInfo.class.getSimpleName(), "NumberFormatExeception: " + e);
+            mValue = 0;
         }
     }
 
